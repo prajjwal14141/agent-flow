@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f172a; /* Slate 900 */
+  --background: #283d6c; /* Slate 900 */
   --foreground: #f8fafc; /* Slate 50 */
 }
 
