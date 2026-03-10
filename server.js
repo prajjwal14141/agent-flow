@@ -19,7 +19,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
-app.options('*', cors());
+app.options('(.*)', cors());
 
 // --- 1. SETUP THE BRAIN ---
 const model = new ChatGroq({
