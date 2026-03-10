@@ -69,6 +69,7 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function Home() {
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
