@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ limit: '500mb', extended: true }));
 app.use(cors({
-  origin: ["https://your-project-name.vercel.app", "http://localhost:3000"],
+  origin: ["https://agent-flow-mu.vercel.app", "http://localhost:3000"],
   methods: ["GET", "POST"],
   credentials: true
 }));

@@ -96,7 +96,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
   setLoading(true);
   try {
-    const response = await fetch('http://localhost:3001/upload', {
+    const response = await fetch(`${API_BASE_URL}/upload`, {
       method: 'POST',
       body: formData, // Send the actual file to the backend
     });
@@ -171,7 +171,7 @@ const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const runAgent = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/run-dynamic-agent', {
+      const response = await fetch(`${API_BASE_URL}/run-dynamic-agent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nodes, edges, initialInput: userContext }),
