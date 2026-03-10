@@ -3,10 +3,15 @@ const express = require("express");
 const cors = require("cors");
 const { ChatGroq } = require("@langchain/groq");
 const { StateGraph, END, START } = require("@langchain/langgraph");
+const multer = require('multer');
+const fs = require('fs');
+const pdf = require('pdf-parse-fork');
+const mammoth = require('mammoth');
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));app.use(cors());
 
 // --- 1. SETUP THE BRAIN ---
 const model = new ChatGroq({
@@ -46,7 +51,6 @@ app.post("/run-dynamic-agent", async (req, res) => {
         workflow.addNode(nodeId, async (state) => {
             console.log(`🤖 Executing Node ${nodeId}...`);
             
-            // 🔴 Join all previous branch answers into a single string
             const inputData = state.data.join("\n---\n"); 
             
             const msg = `
@@ -58,7 +62,6 @@ app.post("/run-dynamic-agent", async (req, res) => {
 
             const result = await model.invoke(msg);
             
-            // 🔴 Return as an array so the reducer can append it
             return { data: [result.content] }; 
         });
 
@@ -116,7 +119,43 @@ app.post("/run-dynamic-agent", async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No file uploaded" });
+    }
 
+    const filePath = req.file.path;
+    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
+    let extractedText = "";
+
+   // 1. Handle PDF
+    if (fileExtension === 'pdf') {
+      const dataBuffer = fs.readFileSync(filePath);
+      
+      // The fork works perfectly as a normal function
+      const data = await pdf(dataBuffer); 
+      extractedText = data.text;
+    }
+    // 2. Handle DOCX
+    else if (fileExtension === 'docx') {
+      const result = await mammoth.extractRawText({ path: filePath });
+      extractedText = result.value;
+    } 
+    // 3. Handle TXT
+    else if (fileExtension === 'txt') {
+      extractedText = fs.readFileSync(filePath, 'utf8');
+    }
+
+    // 🔥 CLEANUP: Delete the file from /uploads after parsing
+    fs.unlinkSync(filePath);
+
+    res.json({ success: true, text: extractedText });
+  } catch (error) {
+    console.error("Parsing Error:", error);
+    res.status(500).json({ success: false, error: "Failed to parse file" });
+  }
+});
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Server is running on http://localhost:${PORT}`);

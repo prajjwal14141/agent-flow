@@ -85,6 +85,31 @@ export default function Home() {
     setNodes((nds) => nds.map((node) => node.id === nodeId ? { ...node, data: { ...node.data, prompt: newPrompt } } : node));
   }, []);
 
+  // Inside your Home component
+const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  setLoading(true);
+  try {
+    const response = await fetch('http://localhost:3001/upload', {
+      method: 'POST',
+      body: formData, // Send the actual file to the backend
+    });
+    const data = await response.json();
+    if (data.success) {
+      setUserContext(data.text); // Put the extracted text into the system
+    }
+  } catch (error) {
+    console.error("Upload failed", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
   const onDeleteNode = useCallback((idToDelete: string) => {
     setNodes((nds) => nds.filter((node) => node.id !== idToDelete));
     setEdges((eds) => eds.filter((edge) => edge.source !== idToDelete && edge.target !== idToDelete));
@@ -126,6 +151,7 @@ export default function Home() {
     [reactFlowInstance, nodes, onPromptChange, onDeleteNode]
   );
 
+  
   const addNode = () => {
     const newId = `node_${Date.now()}`;
     const newNode: Node = {
@@ -163,7 +189,7 @@ export default function Home() {
   return (
     <div className="h-screen w-full bg-[#050505] flex overflow-hidden relative text-white">
       
-      {/* 🔴 TOGGLE BUTTON */}
+      {/* TOGGLE BUTTON */}
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-[100] p-2 bg-[#09090b] border border-white/10 rounded-full hover:bg-white/5 transition-all shadow-xl"
@@ -171,7 +197,7 @@ export default function Home() {
         {isSidebarOpen ? "⇠" : "⇢"} 
       </button>
 
-      {/* 🔴 SLIDING SIDEBAR */}
+      {/* SLIDING SIDEBAR */}
       <div className={`transition-all duration-300 ease-in-out h-full border-r border-white/5 bg-[#050505] z-50 ${isSidebarOpen ? 'w-64' : 'w-0'} overflow-hidden`}>
         <div className="w-64">
           <Sidebar />
@@ -191,9 +217,10 @@ export default function Home() {
           runAgent={runAgent} 
           loading={loading}
           addNode={addNode} 
+          onFileUpload={handleFileUpload}
         />
         
-        {/* ✨ RESULT OVERLAY (Appears when output is generated) */}
+        {/* RESULT OVERLAY (Appears when output is generated) */}
         {nodes.find(n => n.type === 'output')?.data.label && (
           <div className="absolute bottom-10 right-10 z-[60] w-[450px] max-h-[70vh] bg-[#09090b]/90 border border-purple-500/30 backdrop-blur-2xl rounded-3xl shadow-[0_0_50px_rgba(168,85,247,0.15)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5">
             <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
