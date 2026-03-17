@@ -38,7 +38,6 @@ Code snippet: GROQ_API_KEY=your_api_key
               PORT=3001
 
 ### 4. Run the App
-
 ##### Start Backend (from /agent)
 node server.js
 ##### Start Frontend (from /frontend)
